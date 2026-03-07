@@ -32,3 +32,4 @@ Before implementing any feature, always read the relevant files in the `/docs` d
 - `docs/routing.md` — Routing spec: full App Router route map, middleware protection, route groups, layouts, API handler conventions, dynamic segments, and naming rules.
 - `docs/errors-and-validation.md` — Error handling and validation spec: Zod schemas, Server Action and Route Handler error patterns, HeroUI Alert usage, error boundaries, not-found pages, and logging rules.
 - `docs/security.md` — Security spec: absolute rules for secrets and credentials, environment variable management, server-only code, logging hygiene, database security, client-side data exposure prevention, and incident response.
+- `docs/data-fetching.md` — Data fetching spec: Server Component-only fetching, authorization checks, React.cache() deduplication, parallel fetching patterns, Suspense boundaries, RSC boundary rules, and cache invalidation.
