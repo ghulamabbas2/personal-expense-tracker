@@ -2,7 +2,7 @@
 
 ## Overview
 
-All routing follows Next.js App Router conventions. Routes are organized by resource and feature using the filesystem. Every route under `app/` is protected by default and requires an authenticated session — enforced by `middleware.ts` before the request ever reaches a page or handler. Public routes (sign-in, sign-up, NextAuth endpoints) are explicitly opted out of protection via the middleware matcher.
+All routing follows Next.js App Router conventions. Routes are organized by resource and feature using the filesystem. Every route under `app/` is protected by default and requires an authenticated session — enforced by `proxy.ts` before the request ever reaches a page or handler. Public routes (sign-in, sign-up, NextAuth endpoints) are explicitly opted out of protection via the middleware matcher.
 
 ---
 
@@ -76,14 +76,14 @@ app/
 
 ## Route Protection via Middleware
 
-A single `middleware.ts` at the project root intercepts every request before it reaches any page or API handler. It uses NextAuth's `withAuth` wrapper to verify the JWT cookie.
+A single `proxy.ts` at the project root intercepts every request before it reaches any page or API handler. It uses NextAuth's `withAuth` wrapper to verify the JWT cookie.
 
 ### How it works
 
 1. The middleware matcher excludes public routes and Next.js internals from interception
 2. For all other routes, `withAuth` checks the JWT — if absent or invalid, it redirects to `/sign-in?callbackUrl=<original-url>`
 3. Authenticated users visiting `/sign-in` or `/sign-up` are redirected to `/` (dashboard)
-4. The middleware never hits the database — it only verifies the JWT signature at the edge
+4. The proxy never hits the database — it only verifies the JWT signature (runs on Node.js runtime; Edge is not supported in Next.js 16's `proxy.ts`)
 
 ### Public routes (no auth required)
 
@@ -98,14 +98,14 @@ A single `middleware.ts` at the project root intercepts every request before it 
 
 Everything else is protected.
 
-### middleware.ts
+### proxy.ts
 
 ```ts
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const isAuthPage =
       req.nextUrl.pathname.startsWith('/sign-in') ||
       req.nextUrl.pathname.startsWith('/sign-up')

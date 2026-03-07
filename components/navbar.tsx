@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import {
   Navbar,
   NavbarBrand,
@@ -19,6 +21,8 @@ import {
 } from "@heroui/react"
 import { Wallet, LogOut } from "lucide-react"
 
+const NAV_LINKS = [{ href: "/expenses", label: "Expenses" }]
+
 interface AppNavbarProps {
   name: string
   email: string
@@ -26,6 +30,7 @@ interface AppNavbarProps {
 
 export function AppNavbar({ name, email }: AppNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   const initials = name
     .split(" ")
@@ -55,7 +60,7 @@ export function AppNavbar({ name, email }: AppNavbarProps) {
 
       {/* Brand */}
       <NavbarContent justify="start" className="hidden sm:flex">
-        <NavbarBrand>
+        <NavbarBrand as={Link} href="/" className="cursor-pointer">
           <Wallet className="h-6 w-6 text-primary mr-2" aria-hidden="true" />
           <span className="font-bold text-inherit text-lg">Expense Tracker</span>
         </NavbarBrand>
@@ -63,10 +68,28 @@ export function AppNavbar({ name, email }: AppNavbarProps) {
 
       {/* Centered brand on mobile */}
       <NavbarContent justify="center" className="sm:hidden">
-        <NavbarBrand>
+        <NavbarBrand as={Link} href="/" className="cursor-pointer">
           <Wallet className="h-6 w-6 text-primary mr-2" aria-hidden="true" />
           <span className="font-bold text-inherit">Expense Tracker</span>
         </NavbarBrand>
+      </NavbarContent>
+
+      {/* Desktop nav links */}
+      <NavbarContent justify="center" className="hidden sm:flex gap-4">
+        {NAV_LINKS.map(({ href, label }) => (
+          <NavbarItem key={href} isActive={pathname === href}>
+            <Link
+              href={href}
+              className={
+                pathname === href
+                  ? "text-primary font-medium"
+                  : "text-default-600 hover:text-foreground"
+              }
+            >
+              {label}
+            </Link>
+          </NavbarItem>
+        ))}
       </NavbarContent>
 
       {/* Right side: user avatar + dropdown */}
@@ -120,6 +143,21 @@ export function AppNavbar({ name, email }: AppNavbarProps) {
             <span className="text-xs text-default-400">{email}</span>
           </div>
         </NavbarMenuItem>
+        {NAV_LINKS.map(({ href, label }) => (
+          <NavbarMenuItem key={href}>
+            <Link
+              href={href}
+              className={
+                pathname === href
+                  ? "text-primary font-medium text-sm"
+                  : "text-default-600 text-sm"
+              }
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {label}
+            </Link>
+          </NavbarMenuItem>
+        ))}
         <NavbarMenuItem>
           <button
             onClick={handleSignOut}

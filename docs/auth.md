@@ -39,7 +39,7 @@ app/
 lib/
   auth.ts               # NextAuth config (providers, callbacks, adapter)
   db.ts                 # MongoDB connection
-middleware.ts           # Route protection (runs on every request)
+proxy.ts                # Route protection (runs on every request)
 ```
 
 ---
@@ -127,17 +127,17 @@ pages: {
 
 ---
 
-## Route Protection (`middleware.ts`)
+## Route Protection (`proxy.ts`)
 
-A single `middleware.ts` at the project root uses NextAuth's `withAuth` wrapper to protect all app routes:
+A single `proxy.ts` at the project root uses NextAuth's `withAuth` wrapper to protect all app routes:
 
 ```ts
-// middleware.ts
+// proxy.ts
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     // Redirect authenticated users away from auth pages
     const isAuthPage = req.nextUrl.pathname.startsWith("/sign-in") ||
                        req.nextUrl.pathname.startsWith("/sign-up")
@@ -167,7 +167,7 @@ Behavior:
 - Authenticated request to `/sign-in` or `/sign-up` → redirect to `/` (dashboard)
 - After successful sign-in, NextAuth automatically redirects to `callbackUrl` if present and same-origin
 
-The middleware runs at the edge and never touches the database — it only verifies the JWT signature via `authorized`, which is fast and stateless.
+The proxy runs on the Node.js runtime (Edge is not supported in Next.js 16's `proxy.ts`) and never touches the database — it only verifies the JWT signature via `authorized`, which is fast and stateless.
 
 ---
 
