@@ -20,17 +20,7 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import { deleteExpense } from "../actions"
 import { ExpenseModal } from "./ExpenseModal"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import type { SerializedExpense } from "../page"
-
-const CATEGORY_LABELS: Record<string, string> = {
-  food: "Food",
-  transport: "Transport",
-  housing: "Housing",
-  entertainment: "Entertainment",
-  health: "Health",
-  shopping: "Shopping",
-  other: "Other",
-}
+import type { SerializedExpense, SerializedCategory } from "../page"
 
 const CATEGORY_COLORS: Record<
   string,
@@ -45,16 +35,9 @@ const CATEGORY_COLORS: Record<
   other: "default",
 }
 
-const FILTER_OPTIONS = [
-  { key: "all", label: "All Categories" },
-  { key: "food", label: "Food" },
-  { key: "transport", label: "Transport" },
-  { key: "housing", label: "Housing" },
-  { key: "entertainment", label: "Entertainment" },
-  { key: "health", label: "Health" },
-  { key: "shopping", label: "Shopping" },
-  { key: "other", label: "Other" },
-]
+function displayName(name: string) {
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
 
 const PAGE_SIZE = 10
 
@@ -63,7 +46,13 @@ type SortDescriptor = {
   direction: "ascending" | "descending"
 }
 
-export function ExpenseTable({ expenses }: { expenses: SerializedExpense[] }) {
+export function ExpenseTable({
+  expenses,
+  categories,
+}: {
+  expenses: SerializedExpense[]
+  categories: SerializedCategory[]
+}) {
   const [isPendingDelete, startDeleteTransition] = useTransition()
   const [optimisticExpenses, removeOptimistically] = useOptimistic(
     expenses,
@@ -132,12 +121,14 @@ export function ExpenseTable({ expenses }: { expenses: SerializedExpense[] }) {
       result = result.filter(
         (e) =>
           e.description.toLowerCase().includes(lower) ||
-          CATEGORY_LABELS[e.category]?.toLowerCase().includes(lower)
+          e.category.toLowerCase().includes(lower)
       )
     }
 
     if (categoryFilter && categoryFilter !== "all") {
-      result = result.filter((e) => e.category === categoryFilter)
+      result = result.filter(
+        (e) => e.category.toLowerCase() === categoryFilter.toLowerCase()
+      )
     }
 
     result = result.toSorted((a, b) => {
@@ -196,9 +187,12 @@ export function ExpenseTable({ expenses }: { expenses: SerializedExpense[] }) {
             setPage(1)
           }}
         >
-          {FILTER_OPTIONS.map(({ key, label }) => (
-            <SelectItem key={key}>{label}</SelectItem>
-          ))}
+          {[
+            <SelectItem key="all">All Categories</SelectItem>,
+            ...categories.map((cat) => (
+              <SelectItem key={cat.name}>{displayName(cat.name)}</SelectItem>
+            )),
+          ]}
         </Select>
         <Button
           color="primary"
@@ -272,7 +266,7 @@ export function ExpenseTable({ expenses }: { expenses: SerializedExpense[] }) {
                   color={CATEGORY_COLORS[expense.category] ?? "default"}
                   size="sm"
                 >
-                  {CATEGORY_LABELS[expense.category] ?? expense.category}
+                  {displayName(expense.category)}
                 </Chip>
               </TableCell>
               <TableCell>
@@ -331,6 +325,7 @@ export function ExpenseTable({ expenses }: { expenses: SerializedExpense[] }) {
         onClose={() => setIsModalOpen(false)}
         mode={modalMode}
         expense={editingExpense}
+        categories={categories}
       />
 
       {deletingExpense && (

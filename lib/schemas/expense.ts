@@ -6,10 +6,7 @@ export const createExpenseSchema = z.object({
     .number({ invalid_type_error: "Amount must be a number" })
     .positive("Amount must be greater than zero")
     .multipleOf(0.01, "Amount can have at most 2 decimal places"),
-  category: z.enum(
-    ["food", "transport", "housing", "entertainment", "health", "shopping", "other"],
-    { errorMap: () => ({ message: "Please select a valid category" }) }
-  ),
+  category: z.string().min(1, "Category is required"),
   type: z.enum(["expense", "income"], {
     errorMap: () => ({ message: "Please select a type" }),
   }),

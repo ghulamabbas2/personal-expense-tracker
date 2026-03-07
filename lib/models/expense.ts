@@ -25,7 +25,7 @@ const ExpenseSchema = new Schema<IExpense>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     description: { type: String, required: true, trim: true },
     amount: { type: Number, required: true, min: 0 },
-    category: { type: String, required: true, enum: EXPENSE_CATEGORIES },
+    category: { type: String, required: true },
     type: { type: String, required: true, enum: EXPENSE_TYPES },
     notes: { type: String, trim: true },
     date: { type: Date, required: true },

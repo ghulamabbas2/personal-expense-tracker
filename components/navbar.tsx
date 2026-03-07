@@ -21,7 +21,10 @@ import {
 } from "@heroui/react"
 import { Wallet, LogOut } from "lucide-react"
 
-const NAV_LINKS = [{ href: "/expenses", label: "Expenses" }]
+const NAV_LINKS = [
+  { href: "/expenses", label: "Expenses" },
+  { href: "/expenses/categories", label: "Categories" },
+]
 
 interface AppNavbarProps {
   name: string

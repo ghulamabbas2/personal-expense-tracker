@@ -23,26 +23,21 @@ import {
   type CreateExpenseInput,
 } from "@/lib/schemas/expense"
 import { createExpense, updateExpense } from "../actions"
-import type { SerializedExpense } from "../page"
+import type { SerializedExpense, SerializedCategory } from "../page"
 
-const CATEGORIES = [
-  { key: "food", label: "Food" },
-  { key: "transport", label: "Transport" },
-  { key: "housing", label: "Housing" },
-  { key: "entertainment", label: "Entertainment" },
-  { key: "health", label: "Health" },
-  { key: "shopping", label: "Shopping" },
-  { key: "other", label: "Other" },
-]
+function displayName(name: string) {
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   mode: "create" | "edit"
   expense?: SerializedExpense
+  categories: SerializedCategory[]
 }
 
-export function ExpenseModal({ isOpen, onClose, mode, expense }: Props) {
+export function ExpenseModal({ isOpen, onClose, mode, expense, categories }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -177,8 +172,8 @@ export function ExpenseModal({ isOpen, onClose, mode, expense }: Props) {
                   errorMessage={errors.category?.message}
                   isRequired
                 >
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.key}>{cat.label}</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.name}>{displayName(cat.name)}</SelectItem>
                   ))}
                 </Select>
               )}
