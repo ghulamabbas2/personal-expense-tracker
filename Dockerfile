@@ -18,12 +18,21 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Tell next.config.ts to emit standalone output for this Docker build.
-# Server-side secrets are NEVER baked in here — only NEXT_PUBLIC_ vars
-# (non-sensitive, public config) are set as build args.
 ENV DOCKER_BUILD=true
 
+# Public config — safe to bake into the bundle.
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
+# Next.js executes server modules during page-data collection at build time.
+# These placeholder values satisfy env-var guards AND pass Mongoose/NextAuth
+# URI validation so the build succeeds without real secrets.
+# They exist ONLY in this builder stage — they are NOT copied to the runner
+# image (only the standalone output files are copied across).
+ENV MONGODB_URI=mongodb://build:placeholder@localhost:27017/build
+# hadolint ignore=DL3025
+ENV NEXTAUTH_SECRET=build-placeholder-secret-at-least-32-chars-long
+ENV NEXTAUTH_URL=http://localhost:3000
 
 RUN npm run build
 
