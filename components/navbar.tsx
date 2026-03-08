@@ -25,6 +25,7 @@ import { Wallet, LogOut, Sun, Moon } from "lucide-react"
 
 const NAV_LINKS = [
   { href: "/expenses", label: "Expenses" },
+  { href: "/summary", label: "Summary" },
   { href: "/expenses/categories", label: "Categories" },
 ]
 
