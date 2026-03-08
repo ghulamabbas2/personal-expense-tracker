@@ -77,6 +77,7 @@ export function ExpenseModal({ isOpen, onClose, mode, expense, categories }: Pro
         notes: "",
       })
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setServerError(null)
   }, [isOpen, expense?.id, reset])
 

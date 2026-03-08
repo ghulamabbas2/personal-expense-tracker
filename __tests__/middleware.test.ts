@@ -24,9 +24,10 @@ jest.mock("next/server", () => ({
   },
 }))
 
-// Import middleware AFTER mocks are set up so withAuth is called with our spy.
+// Import proxy AFTER mocks are set up so withAuth is called with our spy.
 // The config export is a plain value — no mock needed.
-import { config } from "@/middleware"
+// Next.js 16 uses proxy.ts (not middleware.ts) as the middleware entry point.
+import { config } from "@/proxy"
 
 const mockNextResponseRedirect = NextResponse.redirect as jest.MockedFunction<
   typeof NextResponse.redirect
@@ -131,12 +132,8 @@ describe("middleware — config.matcher", () => {
     expect(config.matcher).toHaveLength(1)
   })
 
-  const pattern = new RegExp(
-    // Strip the leading "/((?!" and trailing ").*)") to get the exclusion group
-    // We test the pattern as a string rather than re-implementing the regex to
-    // avoid false precision — we verify the key exclusions are present.
-    "sign-in|sign-up|api/auth|_next/static|_next/image|favicon.ico"
-  )
+  // We test the pattern as a string rather than re-implementing the regex to
+  // avoid false precision — we verify the key exclusions are present.
 
   it("the matcher pattern string contains exclusions for sign-in", () => {
     expect(config.matcher[0]).toContain("sign-in")

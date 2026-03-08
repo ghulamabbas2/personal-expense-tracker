@@ -33,3 +33,5 @@ Before implementing any feature, always read the relevant files in the `/docs` d
 - `docs/errors-and-validation.md` — Error handling and validation spec: Zod schemas, Server Action and Route Handler error patterns, HeroUI Alert usage, error boundaries, not-found pages, and logging rules.
 - `docs/security.md` — Security spec: absolute rules for secrets and credentials, environment variable management, server-only code, logging hygiene, database security, client-side data exposure prevention, and incident response.
 - `docs/data-fetching.md` — Data fetching spec: Server Component-only fetching, authorization checks, React.cache() deduplication, parallel fetching patterns, Suspense boundaries, RSC boundary rules, and cache invalidation.
+- `docs/charts.md` — Charts & visualizations spec: react-chartjs-2 setup, dynamic imports, theme integration, responsive sizing, dark mode, accessibility, and per-chart configuration details.
+- `docs/deployment.md` — Deployment spec: Docker configuration, GitHub Actions CI/CD pipeline, preview and production deployment flows, required secrets and variables, and security rules for deployments.

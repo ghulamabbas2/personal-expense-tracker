@@ -7,6 +7,7 @@ import mongoose from "mongoose"
 import { SummaryCards } from "./_components/SummaryCards"
 import { RecentTransactions } from "./_components/RecentTransactions"
 import { SpendingByCategory } from "./_components/SpendingByCategory"
+import { MonthlyTrendChart } from "./_components/MonthlyTrendChart"
 
 export type RecentTransaction = {
   id: string
@@ -20,6 +21,12 @@ export type RecentTransaction = {
 export type CategorySpend = {
   category: string
   total: number
+}
+
+export type MonthlyTrend = {
+  month: string
+  income: number
+  expenses: number
 }
 
 export type DashboardSummary = {
@@ -40,9 +47,20 @@ export default async function DashboardPage() {
   const userId = new mongoose.Types.ObjectId(session.user.id)
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+  const endOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  )
 
-  const [allTimeTotals, monthlyTotals, monthlyByCategory, recentRaw] =
+  // Start of 6 months ago (inclusive)
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+
+  const [allTimeTotals, monthlyTotals, monthlyByCategory, recentRaw, trendRaw] =
     await Promise.all([
       // All-time income and expense totals
       Expense.aggregate([
@@ -74,6 +92,27 @@ export default async function DashboardPage() {
         .sort({ date: -1 })
         .limit(5)
         .lean(),
+
+      // Last 6 months of income and expenses grouped by year+month
+      Expense.aggregate([
+        {
+          $match: {
+            userId,
+            date: { $gte: sixMonthsAgo },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$date" },
+              month: { $month: "$date" },
+              type: "$type",
+            },
+            total: { $sum: "$amount" },
+          },
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } },
+      ]),
     ])
 
   // Compute all-time balance
@@ -121,6 +160,33 @@ export default async function DashboardPage() {
     date: e.date.toISOString(),
   }))
 
+  // Build a map of { "YYYY-M" -> { income, expenses } } from the aggregation
+  const trendMap = new Map<string, { income: number; expenses: number }>()
+  for (const r of trendRaw) {
+    const key = `${r._id.year}-${r._id.month}`
+    if (!trendMap.has(key)) trendMap.set(key, { income: 0, expenses: 0 })
+    const entry = trendMap.get(key)!
+    if (r._id.type === "income") entry.income = r.total
+    else entry.expenses = r.total
+  }
+
+  // Fill all 6 months in order so the chart always has a full x-axis
+  const MONTH_NAMES = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ]
+  const monthlyTrend: MonthlyTrend[] = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}`
+    const entry = trendMap.get(key) ?? { income: 0, expenses: 0 }
+    monthlyTrend.push({
+      month: MONTH_NAMES[d.getMonth()],
+      income: entry.income,
+      expenses: entry.expenses,
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -137,6 +203,8 @@ export default async function DashboardPage() {
         <RecentTransactions transactions={recentTransactions} />
         <SpendingByCategory categorySpend={categorySpend} />
       </div>
+
+      <MonthlyTrendChart data={monthlyTrend} />
     </div>
   )
 }

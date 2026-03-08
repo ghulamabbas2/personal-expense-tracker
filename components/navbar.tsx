@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
 import Link from "next/link"
 import {
   Navbar,
@@ -13,13 +14,14 @@ import {
   NavbarMenuItem,
   NavbarMenuToggle,
   Avatar,
+  Button,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
   DropdownSection,
 } from "@heroui/react"
-import { Wallet, LogOut } from "lucide-react"
+import { Wallet, LogOut, Sun, Moon } from "lucide-react"
 
 const NAV_LINKS = [
   { href: "/expenses", label: "Expenses" },
@@ -33,7 +35,12 @@ interface AppNavbarProps {
 
 export function AppNavbar({ name, email }: AppNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+  const { resolvedTheme, setTheme } = useTheme()
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setMounted(true) }, [])
 
   const initials = name
     .split(" ")
@@ -95,8 +102,24 @@ export function AppNavbar({ name, email }: AppNavbarProps) {
         ))}
       </NavbarContent>
 
-      {/* Right side: user avatar + dropdown */}
+      {/* Right side: theme toggle + user avatar + dropdown */}
       <NavbarContent justify="end">
+        {mounted && (
+          <NavbarItem>
+            <Button
+              isIconOnly
+              variant="light"
+              aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              onPress={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            >
+              {resolvedTheme === "dark" ? (
+                <Sun className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Moon className="h-4 w-4" aria-hidden="true" />
+              )}
+            </Button>
+          </NavbarItem>
+        )}
         <NavbarItem>
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
