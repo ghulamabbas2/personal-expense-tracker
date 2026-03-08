@@ -39,6 +39,7 @@ export function AppNavbar({ name, email }: AppNavbarProps) {
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMounted(true) }, [])
 
   const initials = name
